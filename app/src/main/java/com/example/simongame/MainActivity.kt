@@ -11,6 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.simongame.ui.theme.SimonGameTheme
 
 class MainActivity : ComponentActivity() {
@@ -32,7 +35,7 @@ fun SimonGame() {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestinatio = "homescreen",
+            startDestination = "homescreen",
             modifier = Modifier.padding(innerPadding)
         ) {
            composable("homescreen"){
