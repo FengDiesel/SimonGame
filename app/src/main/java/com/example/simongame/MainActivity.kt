@@ -19,29 +19,35 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SimonGameTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+               SimonGame()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun SimonGame() {
+    val navController = rememberNavController()
+
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestinatio = "homescreen",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+           composable("homescreen"){
+               HomeScreen()
+           }
+
+            composable("finalscreen"){
+                FinalScreen()
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    SimonGameTheme {
-        Greeting("Android")
-    }
+    SimonGame()
 }
