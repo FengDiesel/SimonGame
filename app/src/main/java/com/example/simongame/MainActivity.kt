@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
@@ -31,6 +35,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SimonGame() {
     val navController = rememberNavController()
+    var history by rememberSaveable { mutableStateOf(emptyList<String>())}
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         NavHost(
@@ -39,11 +44,21 @@ fun SimonGame() {
             modifier = Modifier.padding(innerPadding)
         ) {
            composable("homescreen"){
-               HomeScreen()
+               HomeScreen(
+                   onEndGame = { newSeq ->
+                       history = history + newSeq
+                       navController.navigate("finalscreen")
+                   }
+               )
            }
 
             composable("finalscreen"){
-                FinalScreen()
+                FinalScreen(
+                    history = history,
+                    onBackPress = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }

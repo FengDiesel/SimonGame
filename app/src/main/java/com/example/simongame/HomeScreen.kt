@@ -3,6 +3,7 @@ package com.example.simongame
 import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,9 +33,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 
 @Composable
-fun HomeScreen(){
-    var initialText = stringResource(R.string.start_sequence)
-    var sequence by rememberSaveable { mutableStateOf(initialText)}
+fun HomeScreen(onEndGame: (String) -> Unit){
+    var sequence by rememberSaveable { mutableStateOf("") }
+
+    fun addColor(letter: String) {
+        if (sequence.isEmpty()) {
+            sequence = letter
+        } else {
+            sequence += " - $letter"
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -50,9 +58,9 @@ fun HomeScreen(){
         Column() {
 
             Row() {
-                Box(modifier = sizeModifier.background(Color.Red)) {}
+                Box(modifier = sizeModifier.background(Color.Red).clickable{addColor("R")}) {}
 
-                Box(modifier = sizeModifier.background(Color.Blue)) {}
+                Box(modifier = sizeModifier.background(Color.Blue).clickable{addColor("B")}) {}
             }
         }
 
@@ -61,9 +69,9 @@ fun HomeScreen(){
         ) {
 
             Row() {
-                Box(modifier = sizeModifier.background(Color.Cyan)) {}
+                Box(modifier = sizeModifier.background(Color.Cyan).clickable{addColor("C")}) {}
 
-                Box(modifier = sizeModifier.background(Color.Yellow)) {}
+                Box(modifier = sizeModifier.background(Color.Yellow).clickable{addColor("Y")}) {}
             }
         }
 
@@ -72,16 +80,16 @@ fun HomeScreen(){
         ) {
 
             Row() {
-                Box(modifier = sizeModifier.background(Color.Magenta)) {}
+                Box(modifier = sizeModifier.background(Color.Magenta).clickable{addColor("M")}) {}
 
-                Box(modifier = sizeModifier.background(Color.Green)) {}
+                Box(modifier = sizeModifier.background(Color.Green).clickable{addColor("G")}) {}
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp).fillMaxWidth())
 
         Text(
-            text = sequence,
+            text = sequence.ifEmpty { stringResource(R.string.start_sequence) },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 100.dp)
@@ -93,13 +101,16 @@ fun HomeScreen(){
         Spacer(modifier = Modifier.height(8.dp).fillMaxWidth())
 
         Row() {
-            Button(onClick = {sequence = initialText}){
+            Button(onClick = { sequence = "" }) {
                 Text(text = stringResource(R.string.delete))
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Button(onClick = {}){
+            Button(onClick = {
+                onEndGame(sequence)
+                sequence = ""
+            }) {
                 Text(text = stringResource(R.string.end_game))
             }
         }
@@ -110,5 +121,7 @@ fun HomeScreen(){
 @Preview
 @Composable
 fun HomeScreenPreview(){
-    HomeScreen()
+    HomeScreen(
+        onEndGame = TODO()
+    )
 }
