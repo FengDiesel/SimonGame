@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Simon Game</string>
-    <string name="start_sequence">Inizia una sequenza</string>
+    <string name="start_sequence">La sequenza apparirà qui…</string>
     <string name="delete">Cancella</string>
     <string name="end_game">Fine partita</string>
+    <string name="score">Storico partite</string>
+    <string name="empty_play">Giocata vuota</string>
 </resources>

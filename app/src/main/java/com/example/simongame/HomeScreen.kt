@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -33,8 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import kotlin.text.ifEmpty
 
 @Composable
@@ -52,10 +55,17 @@ fun HomeScreen(onEndGame: (String) -> Unit){
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text(text = stringResource(R.string.app_name), modifier = Modifier.align(Alignment.CenterHorizontally))
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
 
         if(configuration == Configuration.ORIENTATION_LANDSCAPE){
@@ -70,13 +80,20 @@ fun HomeScreen(onEndGame: (String) -> Unit){
             }
         }else{
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                colorGrid(onColorClick = { color -> addColor(color) }, modifier = Modifier.weight(1f))
+                colorGrid(
+                    onColorClick = { color -> addColor(color) }
+                )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                gameBody(sequence, onEndGame = { onEndGame(sequence); sequence = "" }, onClear = { sequence = "" }, modifier = Modifier.weight(1f))
+                gameBody(
+                    sequence,
+                    onEndGame = { onEndGame(sequence); sequence = "" },
+                    onClear = { sequence = "" }
+                )
             }
         }
     }
@@ -84,25 +101,59 @@ fun HomeScreen(onEndGame: (String) -> Unit){
 
 @Composable
 fun colorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier){
-    val sizeModifier = Modifier.size(100.dp)
+    val sizeModifier = Modifier.size(160.dp)
+
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
 
         Row() {
-            Box(modifier = sizeModifier.background(Color.Red).clickable{onColorClick("R")}) {}
+            Box(modifier = sizeModifier
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color.Red)
+                .clickable { onColorClick("R") }
+            ) {}
 
-            Box(modifier = sizeModifier.background(Color.Blue).clickable{onColorClick("B")}) {}
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Box(modifier = sizeModifier
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color.Blue)
+                .clickable { onColorClick("B") }
+            ) {}
         }
 
-        Row() {
-            Box(modifier = sizeModifier.background(Color.Cyan).clickable{onColorClick("C")}) {}
+        Spacer(modifier = Modifier.height(10.dp))
 
-            Box(modifier = sizeModifier.background(Color.Yellow).clickable{onColorClick("Y")}) {}
+        Row() {
+            Box(modifier = sizeModifier
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color.Cyan)
+                .clickable { onColorClick("C") }
+            ) {}
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Box(modifier = sizeModifier
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color.Yellow)
+                .clickable { onColorClick("Y") }
+            ) {}
         }
+        Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
-            Box(modifier = sizeModifier.background(Color.Magenta).clickable{onColorClick("M")}) {}
+            Box(modifier = sizeModifier
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color.Magenta)
+                .clickable { onColorClick("M") }
+            ) {}
 
-            Box(modifier = sizeModifier.background(Color.Green).clickable{onColorClick("G")}) {}
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Box(modifier = sizeModifier
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color.Green)
+                .clickable { onColorClick("G") }
+            ) {}
         }
     }
 }
@@ -115,13 +166,13 @@ fun gameBody(sequence: String, onEndGame: (String) -> Unit, onClear: () -> Unit,
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .heightIn(min = 100.dp)
-                .border(1.dp, Color.White, RoundedCornerShape(4.dp))
+                .weight(1f)
+                .clip(RoundedCornerShape(30.dp))
                 .padding(8.dp),
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
             Button(onClick = { onClear() }) {
@@ -142,6 +193,6 @@ fun gameBody(sequence: String, onEndGame: (String) -> Unit, onClear: () -> Unit,
 @Composable
 fun HomeScreenPreview(){
     HomeScreen(
-        onEndGame = TODO()
+        onEndGame = {}
     )
 }
