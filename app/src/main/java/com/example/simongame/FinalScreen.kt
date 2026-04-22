@@ -2,8 +2,6 @@ package com.example.simongame
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,11 +12,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -29,8 +25,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+/**
+ * Schermata finale che mostra la lista delle partite concluse.
+ *
+ * @param history Lista di stringhe che contenente lo storico di tutte le giocate.
+ * @param onBackPress Funzione invocata per intercettare il tasto "back" di sistema
+ * e tornare alla schermata principale.
+ */
 @Composable
-fun FinalScreen(history: List<String>, onBackPress: () -> Unit){
+fun FinalScreen(history: List<String>, onBackPress: () -> Unit) {
 
     BackHandler() {
         onBackPress()
@@ -42,7 +45,7 @@ fun FinalScreen(history: List<String>, onBackPress: () -> Unit){
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        item{
+        item {
             Text(
                 text = stringResource(R.string.score),
                 style = MaterialTheme.typography.titleLarge,
@@ -55,30 +58,35 @@ fun FinalScreen(history: List<String>, onBackPress: () -> Unit){
             val letters = sequence.split(" - ")
             var expansion by rememberSaveable { mutableStateOf(false) }
 
-            Row(modifier = Modifier.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.padding(vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = if(sequence.isEmpty()) "0" else letters.count().toString(),
+                    text = if (sequence.isEmpty()) "0" else letters.count().toString(),
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.width(20.dp))
 
                 Text(
-                    text = if(sequence.isEmpty()) stringResource(R.string.empty_play) else sequence,
-                    maxLines = if(expansion) 10 else 1,
+                    text = if (sequence.isEmpty()) stringResource(R.string.empty_play) else sequence,
+                    maxLines = if (expansion) 10 else 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f).clickable { expansion = !expansion }
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { expansion = !expansion }
                 )
             }
 
-            HorizontalDivider( thickness = 2.dp )
+            HorizontalDivider(thickness = 2.dp)
         }
     }
 }
 
 @Preview
 @Composable
-fun FinalScreenPreview(){
+fun FinalScreenPreview() {
     FinalScreen(
         history = listOf(
             "R, G, B, Y",

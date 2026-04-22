@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,16 +25,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SimonGameTheme {
-               SimonGame()
+                SimonGame()
             }
         }
     }
 }
 
+
+/**
+ * Componente principale di SimonGame.
+ * Contiene NavHost per la navigazione tra le schermate e memorizza lo storico delle partite garantendo
+ * la sopravvivenza durante i cambi di rotazione.
+ */
 @Composable
 fun SimonGame() {
     val navController = rememberNavController()
-    var history by rememberSaveable { mutableStateOf(emptyList<String>())}
+    var history by rememberSaveable { mutableStateOf(emptyList<String>()) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         NavHost(
@@ -43,16 +48,16 @@ fun SimonGame() {
             startDestination = "homescreen",
             modifier = Modifier.padding(innerPadding)
         ) {
-           composable("homescreen"){
-               HomeScreen(
-                   onEndGame = { newSeq ->
-                       history = history + newSeq
-                       navController.navigate("finalscreen")
-                   }
-               )
-           }
+            composable("homescreen") {
+                HomeScreen(
+                    onEndGame = { newSeq ->
+                        history = history + newSeq
+                        navController.navigate("finalscreen")
+                    }
+                )
+            }
 
-            composable("finalscreen"){
+            composable("finalscreen") {
                 FinalScreen(
                     history = history,
                     onBackPress = {
