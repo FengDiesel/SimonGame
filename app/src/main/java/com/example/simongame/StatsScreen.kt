@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
  * e tornare alla schermata principale.
  */
 @Composable
-fun FinalScreen(history: List<String>, onBackPress: () -> Unit) {
+fun StatsScreen(history: List<String>, onBackPress: () -> Unit) {
 
     BackHandler() {
         onBackPress()
@@ -86,8 +86,8 @@ fun FinalScreen(history: List<String>, onBackPress: () -> Unit) {
 
 @Preview
 @Composable
-fun FinalScreenPreview() {
-    FinalScreen(
+fun StatsScreenPreview() {
+    StatsScreen(
         history = listOf(
             "R, G, B, Y",
             "",

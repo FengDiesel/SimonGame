@@ -14,9 +14,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.simongame.GameDetailScreen
 import com.example.simongame.ui.theme.SimonGameTheme
 
 class MainActivity : ComponentActivity() {
@@ -40,27 +42,41 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SimonGame() {
     val navController = rememberNavController()
-    var history by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    val gameViewModel: GameViewModel = viewModel()
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "homescreen",
+            startDestination = "statsscreen",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("homescreen") {
-                HomeScreen(
-                    onEndGame = { newSeq ->
-                        history = history + newSeq
-                        navController.navigate("finalscreen")
+            composable("statsscreen") {
+                StatsScreen(
+                    gameViewModel,
+                    onGameScreen = {
+                        navController.navigate("gamescreen")
+                    },
+                    onGameDetail = {
+                        navController.navigate("gamedetailscreen")
                     }
                 )
             }
 
-            composable("finalscreen") {
-                FinalScreen(
-                    history = history,
-                    onBackPress = {
+            composable("gamescreen") {
+                GameScreen(
+                    gameViewModel,
+                    onEndGame = {
+                        navController.navigate("statsscreen") {
+                            popUpTo("statsscreen") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable("gamedetailscreen") {
+                GameDetailScreen(
+                    gameViewModel,
+                    onExit = {
                         navController.popBackStack()
                     }
                 )
