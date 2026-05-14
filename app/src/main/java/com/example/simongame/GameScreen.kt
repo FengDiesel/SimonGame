@@ -45,7 +45,7 @@ import kotlin.text.ifEmpty
  * Fornisce in output la sequenza finale sotto forma di stringa.
  */
 @Composable
-fun GameScreen(onEndGame: (String) -> Unit) {
+fun GameScreen(history: List<GameResult>, onEndGame: (String) -> Unit) {
     val configuration = LocalConfiguration.current.orientation
 
     var sequence by rememberSaveable { mutableStateOf("") }
@@ -233,7 +233,5 @@ fun GameBody(
 @Preview
 @Composable
 fun GameScreenPreview() {
-    GameScreen(
-        onEndGame = {}
-    )
+    //GameScreen()
 }

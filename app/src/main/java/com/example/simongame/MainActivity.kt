@@ -52,19 +52,19 @@ fun SimonGame() {
         ) {
             composable("statsscreen") {
                 StatsScreen(
-                    gameViewModel,
+                    gameViewModel.history,
                     onGameScreen = {
                         navController.navigate("gamescreen")
                     },
-                    onGameDetail = {
-                        navController.navigate("gamedetailscreen")
+                    onGameDetail = { gameID ->
+                        navController.navigate("gamedetailscreen/$gameID")
                     }
                 )
             }
 
             composable("gamescreen") {
                 GameScreen(
-                    gameViewModel,
+                    gameViewModel.history,
                     onEndGame = {
                         navController.navigate("statsscreen") {
                             popUpTo("statsscreen") { inclusive = true }
@@ -73,9 +73,11 @@ fun SimonGame() {
                 )
             }
 
-            composable("gamedetailscreen") {
+            composable("gamedetailscreen/{gameID}") { backStackEntry ->
+                val gameID = backStackEntry.arguments?.getString("gameID") ?: "NULL"
                 GameDetailScreen(
-                    gameViewModel,
+                    gameID,
+                    gameViewModel.history,
                     onExit = {
                         navController.popBackStack()
                     }

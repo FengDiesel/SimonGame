@@ -9,8 +9,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,53 +38,56 @@ import androidx.compose.ui.unit.dp
  * e tornare alla schermata principale.
  */
 @Composable
-fun StatsScreen(history: List<String>, onBackPress: () -> Unit) {
+fun StatsScreen(history: List<GameResult>, onGameScreen: () -> Unit, onGameDetail: (String) -> Unit) {
 
-    BackHandler() {
-        onBackPress()
-    }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        item {
-            Text(
-                text = stringResource(R.string.score),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { onGameScreen() }) {
+                Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.start_game))
+            }
         }
-
-        items(history) { sequence ->
-            val letters = sequence.split(" - ")
-            var expansion by rememberSaveable { mutableStateOf(false) }
-
-            Row(
-                modifier = Modifier.padding(vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+    ){ innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentPadding = innerPadding,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
                 Text(
-                    text = if (sequence.isEmpty()) "0" else letters.count().toString(),
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.width(20.dp))
-
-                Text(
-                    text = if (sequence.isEmpty()) stringResource(R.string.empty_play) else sequence,
-                    maxLines = if (expansion) 10 else 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { expansion = !expansion }
+                    text = stringResource(R.string.score),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
 
-            HorizontalDivider(thickness = 2.dp)
+            items(history) { game ->
+                val sequence = game.sequence;
+                val letters = sequence.split(" - ")
+
+                Row(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (sequence.isEmpty()) "0" else game.maxCorrectLength.toString(),
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Text(
+                        text = if (sequence.isEmpty()) stringResource(R.string.empty_play) else sequence,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onGameDetail(game.gameID) }
+                    )
+                }
+
+                HorizontalDivider(thickness = 2.dp)
+            }
         }
     }
 }
@@ -87,15 +95,5 @@ fun StatsScreen(history: List<String>, onBackPress: () -> Unit) {
 @Preview
 @Composable
 fun StatsScreenPreview() {
-    StatsScreen(
-        history = listOf(
-            "R, G, B, Y",
-            "",
-            "R, G, B, M, Y, C, R, G, B, M, Y, C, R, G, C, C, Y, B, M, R, G, B, M, Y, C, R, G, B, M, Y, C, R, G, C, C, Y, B, M",
-            "R, R, R, Y, Y, Y",
-            "G, B, M, Y, C, R, M, Y, C, R, G, B, M, Y, C, R, M, Y, C, R, G, C, C, Y, B, M",
-            ""
-        ),
-        onBackPress = {}
-    )
+    //StatsScreen()
 }

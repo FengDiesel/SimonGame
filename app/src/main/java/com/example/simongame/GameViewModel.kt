@@ -2,6 +2,7 @@ package com.example.simongame
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
+import java.util.UUID
 
 class GameViewModel : ViewModel() {
     val history = mutableStateListOf<GameResult>()
@@ -10,7 +11,7 @@ class GameViewModel : ViewModel() {
         val newGame = GameResult(
             maxCorrectLength = calculateLength(sequence)-1,
             sequence = sequence,
-            time = System.currentTimeMillis()
+            gameID = UUID.randomUUID().toString()
         )
 
         history.add(newGame)
