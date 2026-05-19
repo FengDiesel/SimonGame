@@ -5,5 +5,8 @@
     <string name="start_game">Start Game</string>
     <string name="end_game">End Game</string>
     <string name="score">Match history</string>
+    <string name="game_details">Game details</string>
     <string name="empty_play">Empty play</string>
+    <string name="game_not_found">Game not found</string>
+    <string name="pause">Pause</string>
 </resources>

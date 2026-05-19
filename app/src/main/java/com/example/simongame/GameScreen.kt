@@ -216,13 +216,19 @@ fun GameBody(
         Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
-            Button(onClick = { onClear() }) {
-                Text(text = stringResource(R.string.delete))
+            Button(onClick = { }) {
+                Text(text = stringResource(R.string.start_game))
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Button(onClick = { onEndGame(sequence) }) {
+            Button(onClick = { }) {
+                Text(text = stringResource(R.string.pause))
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Button(onClick = { }) {
                 Text(text = stringResource(R.string.end_game))
             }
         }
