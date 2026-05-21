@@ -9,4 +9,5 @@
     <string name="empty_play">Empty play</string>
     <string name="game_not_found">Game not found</string>
     <string name="pause">Pause</string>
+    <string name="play">Play</string>
 </resources>

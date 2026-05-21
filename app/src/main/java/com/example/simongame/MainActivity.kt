@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SimonGame() {
     val navController = rememberNavController()
-    val gameViewModel: GameViewModel = viewModel()
+    val gameListVM: GameListViewModel = viewModel()
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         NavHost(
@@ -52,7 +52,7 @@ fun SimonGame() {
         ) {
             composable("statsscreen") {
                 StatsScreen(
-                    gameViewModel.history,
+                    gameListVM.history,
                     onGameScreen = {
                         navController.navigate("gamescreen")
                     },
@@ -63,13 +63,16 @@ fun SimonGame() {
             }
 
             composable("gamescreen") {
+                val gameVM: GameViewModel = viewModel()
                 GameScreen(
-                    gameViewModel.history,
+                    gameListVM.history,
+                    gameVM,
                     onEndGame = {
                         navController.navigate("statsscreen") {
                             popUpTo("statsscreen") { inclusive = true }
                         }
-                    }
+                    },
+                    onNullGame = { navController.popBackStack() }
                 )
             }
 
@@ -77,7 +80,7 @@ fun SimonGame() {
                 val gameID = backStackEntry.arguments?.getString("gameID") ?: "NULL"
                 GameDetailScreen(
                     gameID,
-                    gameViewModel.history,
+                    gameListVM.history,
                     onExit = {
                         navController.popBackStack()
                     }

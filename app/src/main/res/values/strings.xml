@@ -9,4 +9,5 @@
     <string name="empty_play">Giocata vuota</string>
     <string name="game_not_found">Giocata non trovata</string>
     <string name="pause">Pausa</string>
+    <string name="play">Play</string>
 </resources>

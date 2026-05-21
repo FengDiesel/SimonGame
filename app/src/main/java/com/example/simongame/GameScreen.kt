@@ -1,7 +1,14 @@
 package com.example.simongame
 
+import android.R.attr.enabled
+import android.R.attr.onClick
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,10 +52,22 @@ import kotlin.text.ifEmpty
  * Fornisce in output la sequenza finale sotto forma di stringa.
  */
 @Composable
-fun GameScreen(history: List<GameResult>, onEndGame: (String) -> Unit) {
+fun GameScreen(history: List<GameResult>, gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGame: () -> Unit) {
     val configuration = LocalConfiguration.current.orientation
-
+    val phase by gameVM.gamePhase
+    val isPaused by gameVM.isPaused
     var sequence by rememberSaveable { mutableStateOf("") }
+
+    BackHandler() {
+        if(phase == GamePhase.ERROR){
+            onEndGame(gameVM.gameResult.value)
+        }else if(phase == GamePhase.CPU || phase == GamePhase.USER){
+            gameVM.endGame()
+            onEndGame(gameVM.gameResult.value)
+        }else{
+            onNullGame()
+        }
+    }
 
     fun addColor(letter: String) {
         if (sequence.isEmpty()) {
@@ -85,9 +104,10 @@ fun GameScreen(history: List<GameResult>, onEndGame: (String) -> Unit) {
 
                 GameBody(
                     sequence,
-                    onEndGame = { onEndGame(sequence); sequence = "" },
+                    onEndGame = { onEndGame(gameVM.gameResult.value); sequence = "" },
                     onClear = { sequence = "" },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    gameVM
                 )
             }
         } else {
@@ -103,8 +123,10 @@ fun GameScreen(history: List<GameResult>, onEndGame: (String) -> Unit) {
 
                 GameBody(
                     sequence,
-                    onEndGame = { onEndGame(sequence); sequence = "" },
-                    onClear = { sequence = "" }
+                    onEndGame = { onEndGame(gameVM.gameResult.value); sequence = "" },
+                    onClear = { sequence = "" },
+                    modifier = Modifier.weight(1f),
+                    gameVM
                 )
             }
         }
@@ -119,7 +141,7 @@ fun GameScreen(history: List<GameResult>, onEndGame: (String) -> Unit) {
  * @param modifier Modificatore per gestire le dimensioni e layout.
  */
 @Composable
-fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier) {
+fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier, gameVM: GameViewModel) {
     val sizeModifier =
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Modifier.size(130.dp)
@@ -132,7 +154,10 @@ fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier) {
                 modifier = sizeModifier
                     .clip(RoundedCornerShape(30.dp))
                     .background(Color.Red)
-                    .clickable { onColorClick("R") }
+                    .clickable (
+                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
+                        onClick = { onColorClick("R") }
+                    )
             ) {}
 
             Spacer(modifier = Modifier.width(10.dp))
@@ -141,7 +166,10 @@ fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier) {
                 modifier = sizeModifier
                     .clip(RoundedCornerShape(30.dp))
                     .background(Color.Blue)
-                    .clickable { onColorClick("B") }
+                    .clickable (
+                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
+                        onClick = { onColorClick("B") }
+                    )
             ) {}
         }
 
@@ -152,7 +180,10 @@ fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier) {
                 modifier = sizeModifier
                     .clip(RoundedCornerShape(30.dp))
                     .background(Color.Cyan)
-                    .clickable { onColorClick("C") }
+                    .clickable (
+                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
+                        onClick = { onColorClick("C") }
+                    )
             ) {}
 
             Spacer(modifier = Modifier.width(10.dp))
@@ -161,7 +192,10 @@ fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier) {
                 modifier = sizeModifier
                     .clip(RoundedCornerShape(30.dp))
                     .background(Color.Yellow)
-                    .clickable { onColorClick("Y") }
+                    .clickable (
+                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
+                        onClick = { onColorClick("Y") }
+                    )
             ) {}
         }
         Spacer(modifier = Modifier.height(10.dp))
@@ -171,7 +205,10 @@ fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier) {
                 modifier = sizeModifier
                     .clip(RoundedCornerShape(30.dp))
                     .background(Color.Magenta)
-                    .clickable { onColorClick("M") }
+                    .clickable (
+                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
+                        onClick = { onColorClick("M") }
+                    )
             ) {}
 
             Spacer(modifier = Modifier.width(10.dp))
@@ -180,7 +217,10 @@ fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier) {
                 modifier = sizeModifier
                     .clip(RoundedCornerShape(30.dp))
                     .background(Color.Green)
-                    .clickable { onColorClick("G") }
+                    .clickable (
+                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
+                        onClick = { onColorClick("G") }
+                    )
             ) {}
         }
     }
@@ -197,10 +237,35 @@ fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun GameBody(
     sequence: String,
-    onEndGame: (String) -> Unit,
+    onEndGame: (GameResult) -> Unit,
     onClear: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    gameVM: GameViewModel
 ) {
+    val phase by gameVM.gamePhase
+
+    var start = false
+    var end = false
+    var pause = false
+
+    if(phase == GamePhase.STATIC){
+        start = true
+        end = false
+        pause = false
+    }else if(phase == GamePhase.CPU){
+        start = false
+        end = true
+        pause = true
+    }else if(phase == GamePhase.USER){
+        start = false
+        end = true
+        pause = false
+    }else if(phase == GamePhase.ERROR){
+        start = false
+        end = false
+        pause = false
+    }
+
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = sequence.ifEmpty { stringResource(R.string.start_sequence) },
@@ -216,19 +281,19 @@ fun GameBody(
         Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
-            Button(onClick = { }) {
+            Button(onClick = { gameVM.startGame() }, enabled = start) {
                 Text(text = stringResource(R.string.start_game))
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Button(onClick = { }) {
-                Text(text = stringResource(R.string.pause))
+            Button(onClick = { gameVM.togglePause() }, enabled = pause) {
+                Text(text = if(gameVM.isPaused.value) stringResource(R.string.play) else stringResource(R.string.pause))
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Button(onClick = { }) {
+            Button(onClick = { gameVM.endGame(); onEndGame(gameVM.gameResult.value)}, enabled = end) {
                 Text(text = stringResource(R.string.end_game))
             }
         }
