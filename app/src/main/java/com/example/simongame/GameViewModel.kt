@@ -1,9 +1,11 @@
 package com.example.simongame
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.State
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -17,8 +19,10 @@ private const val paused_delay : Long = 100
 
 class GameViewModel : ViewModel(){
     private var cpuSequence = mutableStateListOf<String>()
-    private var userSequence = mutableStateListOf<String>()
-    private var activeColor= mutableStateOf("")
+    private var _userSequence = mutableStateListOf<String>()
+    val userSequence: List<String> = _userSequence
+    private var _activeColor= mutableStateOf("")
+    val activeColor: MutableState<String> = _activeColor
 
     private var playbackJob: Job? = null
 
@@ -32,12 +36,16 @@ class GameViewModel : ViewModel(){
     val isPaused: State<Boolean> = _isPaused
 
     fun startGame(){
+        cpuSequence.clear()
+        _userSequence.clear()
+
         _gamePhase.value = GamePhase.CPU
 
         nextTurn()
     }
 
     private fun nextTurn() {
+        _userSequence.clear()
         cpuSequence.add(colors.random())
 
         playbackJob = viewModelScope.launch{
@@ -46,9 +54,9 @@ class GameViewModel : ViewModel(){
                     delay(paused_delay)
                 }
 
-                activeColor.value = cpuSequence[i-1]
+                _activeColor.value = cpuSequence[i-1]
                 delay(active_color_delay)
-                activeColor.value = ""
+                _activeColor.value = ""
                 delay(between_color_delay)
             }
             _gamePhase.value = GamePhase.USER
@@ -58,19 +66,19 @@ class GameViewModel : ViewModel(){
     fun togglePause(){ _isPaused.value = !_isPaused.value }
 
     fun clickedColor(color: String){
-        userSequence.add(color)
+        _userSequence.add(color)
 
         if(checkError()) {
             _gamePhase.value = GamePhase.ERROR
             endGame()
-        }else if(userSequence.size == cpuSequence.size){
+        }else if(_userSequence.size == cpuSequence.size){
             nextTurn()
         }
 
     }
 
     private fun checkError() : Boolean {
-        if(cpuSequence[userSequence.size-1] != userSequence[userSequence.size-1]) return true
+        if(cpuSequence[_userSequence.size-1] != _userSequence[_userSequence.size-1]) return true
         return false
     }
 
@@ -79,11 +87,11 @@ class GameViewModel : ViewModel(){
 
         if (!(_gamePhase.value == GamePhase.CPU && cpuSequence.size == 1)){ //non devo salvare dati se è in riproduzione la cpu e siamo nel primo round
             if(_gamePhase.value == GamePhase.ERROR){
-                seq = userSequence.joinToString(" - ")
-            }else if(userSequence.isEmpty()){
+                seq = _userSequence.joinToString(" - ")
+            }else if(_userSequence.isEmpty()){
                 seq = "X"
             }else{
-                seq = userSequence.joinToString(" - ") + " - X"
+                seq = _userSequence.joinToString(" - ") + " - X"
             }
 
             _gameResult.value = GameResult(

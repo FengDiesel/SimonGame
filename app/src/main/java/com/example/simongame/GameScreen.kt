@@ -1,14 +1,8 @@
 package com.example.simongame
 
-import android.R.attr.enabled
-import android.R.attr.onClick
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,16 +21,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -52,11 +43,10 @@ import kotlin.text.ifEmpty
  * Fornisce in output la sequenza finale sotto forma di stringa.
  */
 @Composable
-fun GameScreen(history: List<GameResult>, gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGame: () -> Unit) {
+fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGame: () -> Unit) {
     val configuration = LocalConfiguration.current.orientation
     val phase by gameVM.gamePhase
     val isPaused by gameVM.isPaused
-    var sequence by rememberSaveable { mutableStateOf("") }
 
     BackHandler() {
         if(phase == GamePhase.ERROR){
@@ -66,14 +56,6 @@ fun GameScreen(history: List<GameResult>, gameVM: GameViewModel, onEndGame: (Gam
             onEndGame(gameVM.gameResult.value)
         }else{
             onNullGame()
-        }
-    }
-
-    fun addColor(letter: String) {
-        if (sequence.isEmpty()) {
-            sequence = letter
-        } else {
-            sequence += " - $letter"
         }
     }
 
@@ -96,16 +78,15 @@ fun GameScreen(history: List<GameResult>, gameVM: GameViewModel, onEndGame: (Gam
                 modifier = Modifier.fillMaxSize()
             ) {
                 ColorGrid(
-                    onColorClick = { color -> addColor(color) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    gameVM
                 )
 
                 Spacer(modifier = Modifier.width(10.dp))
 
                 GameBody(
-                    sequence,
-                    onEndGame = { onEndGame(gameVM.gameResult.value); sequence = "" },
-                    onClear = { sequence = "" },
+                    if(phase == GamePhase.USER) gameVM.userSequence.joinToString(" - ") else "",
+                    onEndGame = { onEndGame(gameVM.gameResult.value) },
                     modifier = Modifier.weight(1f),
                     gameVM
                 )
@@ -116,15 +97,15 @@ fun GameScreen(history: List<GameResult>, gameVM: GameViewModel, onEndGame: (Gam
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ColorGrid(
-                    onColorClick = { color -> addColor(color) }
+                    modifier = Modifier.weight(1f),
+                    gameVM
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 GameBody(
-                    sequence,
-                    onEndGame = { onEndGame(gameVM.gameResult.value); sequence = "" },
-                    onClear = { sequence = "" },
+                    if(phase == GamePhase.USER) gameVM.userSequence.joinToString(" - ") else "",
+                    onEndGame = { onEndGame(gameVM.gameResult.value) },
                     modifier = Modifier.weight(1f),
                     gameVM
                 )
@@ -141,87 +122,42 @@ fun GameScreen(history: List<GameResult>, gameVM: GameViewModel, onEndGame: (Gam
  * @param modifier Modificatore per gestire le dimensioni e layout.
  */
 @Composable
-fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier, gameVM: GameViewModel) {
+fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel) {
     val sizeModifier =
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Modifier.size(130.dp)
         } else Modifier.size(90.dp)
 
+    val phase by gameVM.gamePhase
+    val activeColor by gameVM.activeColor
+
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
 
         Row() {
-            Box(
-                modifier = sizeModifier
-                    .clip(RoundedCornerShape(30.dp))
-                    .background(Color.Red)
-                    .clickable (
-                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
-                        onClick = { onColorClick("R") }
-                    )
-            ) {}
+            GameButton(Color.Red, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Box(
-                modifier = sizeModifier
-                    .clip(RoundedCornerShape(30.dp))
-                    .background(Color.Blue)
-                    .clickable (
-                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
-                        onClick = { onColorClick("B") }
-                    )
-            ) {}
+            GameButton(Color.Blue, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
-            Box(
-                modifier = sizeModifier
-                    .clip(RoundedCornerShape(30.dp))
-                    .background(Color.Cyan)
-                    .clickable (
-                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
-                        onClick = { onColorClick("C") }
-                    )
-            ) {}
+            GameButton(Color.Cyan, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Box(
-                modifier = sizeModifier
-                    .clip(RoundedCornerShape(30.dp))
-                    .background(Color.Yellow)
-                    .clickable (
-                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
-                        onClick = { onColorClick("Y") }
-                    )
-            ) {}
+            GameButton(Color.Yellow, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
         }
         Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
-            Box(
-                modifier = sizeModifier
-                    .clip(RoundedCornerShape(30.dp))
-                    .background(Color.Magenta)
-                    .clickable (
-                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
-                        onClick = { onColorClick("M") }
-                    )
-            ) {}
+            GameButton(Color.Magenta, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Box(
-                modifier = sizeModifier
-                    .clip(RoundedCornerShape(30.dp))
-                    .background(Color.Green)
-                    .clickable (
-                        enabled = if(gameVM.gamePhase.value == GamePhase.USER) true else false,
-                        onClick = { onColorClick("G") }
-                    )
-            ) {}
+            GameButton(Color.Green, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
         }
     }
 }
@@ -238,7 +174,6 @@ fun ColorGrid(onColorClick: (String) -> Unit, modifier: Modifier = Modifier, gam
 fun GameBody(
     sequence: String,
     onEndGame: (GameResult) -> Unit,
-    onClear: () -> Unit,
     modifier: Modifier = Modifier,
     gameVM: GameViewModel
 ) {

@@ -65,9 +65,9 @@ fun SimonGame() {
             composable("gamescreen") {
                 val gameVM: GameViewModel = viewModel()
                 GameScreen(
-                    gameListVM.history,
                     gameVM,
                     onEndGame = {
+                        gameListVM.addGame(it)
                         navController.navigate("statsscreen") {
                             popUpTo("statsscreen") { inclusive = true }
                         }

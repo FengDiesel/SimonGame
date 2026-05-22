@@ -7,14 +7,8 @@ import java.util.UUID
 class GameListViewModel : ViewModel() {
     val history = mutableStateListOf<GameResult>()
 
-    fun addGame(sequence: String) {
-        val newGame = GameResult(
-            maxCorrectLength = calculateLength(sequence)-1,
-            sequence = sequence,
-            gameID = UUID.randomUUID().toString()
-        )
-
-        history.add(newGame)
+    fun addGame(game: GameResult) {
+        history.add(game)
     }
 
     private fun calculateLength(sequence: String): Int {
