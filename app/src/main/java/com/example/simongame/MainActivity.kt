@@ -13,7 +13,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,7 +45,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SimonGame() {
     val navController = rememberNavController()
-    val gameListVM: GameListViewModel = viewModel()
+    val context = LocalContext.current
+    val gameListVM: GameListViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val dao = SimonDatabase.getDatabase(context).gameResultDao()
+                return GameListViewModel(dao) as T
+            }
+        }
+    )
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         NavHost(

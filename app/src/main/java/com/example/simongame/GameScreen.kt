@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import kotlin.text.ifEmpty
 
 /**
@@ -202,15 +203,23 @@ fun GameBody(
     }
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        val text = when (phase) {
+                GamePhase.ERROR -> R.string.error
+                GamePhase.STATIC -> R.string.start_sequence
+                GamePhase.CPU -> R.string.cpu
+                else -> R.string.no_text
+            }
+
         Text(
-            text = sequence.ifEmpty { stringResource(R.string.start_sequence) },
+            text = if(phase == GamePhase.USER) sequence else stringResource(text),
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .weight(1f)
                 .clip(RoundedCornerShape(30.dp))
                 .padding(8.dp),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            fontSize = 24.sp
         )
 
         Spacer(modifier = Modifier.height(10.dp))

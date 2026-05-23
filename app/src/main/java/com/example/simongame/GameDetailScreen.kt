@@ -41,7 +41,16 @@ fun GameDetailScreen(gameID: String, history: List<GameResult>, onExit: ()-> Uni
         HorizontalDivider(thickness = 4.dp)
 
         Text(
-            text = (game?.maxCorrectLength ?: "0").toString() + " - " + (game?.sequence ?: stringResource(R.string.game_not_found)),
+            text = "Lunghezza della sequenza più lunga corretta: " + (game?.maxCorrectLength ?: "0").toString(),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold
+        )
+
+        HorizontalDivider(thickness = 4.dp)
+
+        Text(
+            text = ("Sequenza dell'ultima giocata: " + game?.sequence) ?: stringResource(R.string.game_not_found),
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold
