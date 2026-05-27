@@ -8,6 +8,8 @@ import androidx.room.PrimaryKey
 data class GameResult(
     @ColumnInfo(name = "max_correct_length")
     val maxCorrectLength: Int,
+    @ColumnInfo(name = "current_correct_length")
+    val currentCorrectLength: Int,
     @ColumnInfo(name = "sequence")
     val sequence: String, // sequence with error
     @PrimaryKey

@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [GameResult::class], version = 1)
+@Database(entities = [GameResult::class], version = 2)
 abstract class SimonDatabase: RoomDatabase(){
     abstract fun gameResultDao(): GameResultDao
 
@@ -21,7 +21,7 @@ abstract class SimonDatabase: RoomDatabase(){
                     "simon_game_database"
                 )
 
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(false)
                     .build()
 
                 INSTANCE = instance

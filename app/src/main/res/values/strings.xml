@@ -11,6 +11,8 @@
     <string name="game_not_found">Giocata non trovata</string>
     <string name="pause">Pausa</string>
     <string name="play">Play</string>
-    <string name="error">Errore! Torna alla schermata precedente per continuare a giocare...</string>
-    <string name="cpu">La CPU sta mostrando la sequenza... Memorizzala!</string>
+    <string name="error">Errore! Torna alla schermata precedente per continuare a giocare…</string>
+    <string name="cpu">La CPU sta mostrando la sequenza… Memorizzala!</string>
+    <string name="max_length">Lunghezza sequenza massima</string>
+    <string name="sequence">Sequenza</string>
 </resources>

@@ -18,7 +18,8 @@ private const val between_color_delay : Long = 300
 private const val paused_delay : Long = 100
 
 class GameViewModel : ViewModel(){
-    private var cpuSequence = mutableStateListOf<String>()
+    private var _cpuSequence = mutableStateListOf<String>()
+    val cpuSequence: List<String> = _cpuSequence
     private var _userSequence = mutableStateListOf<String>()
     val userSequence: List<String> = _userSequence
     private var _activeColor= mutableStateOf("")
@@ -26,7 +27,7 @@ class GameViewModel : ViewModel(){
 
     private var playbackJob: Job? = null
 
-    private val _gameResult = mutableStateOf( GameResult(0, "",""))
+    private val _gameResult = mutableStateOf( GameResult(0, 0, "",""))
     val gameResult: State<GameResult> = _gameResult
 
     private val _gamePhase = mutableStateOf(GamePhase.STATIC)
@@ -36,7 +37,7 @@ class GameViewModel : ViewModel(){
     val isPaused: State<Boolean> = _isPaused
 
     fun startGame(){
-        cpuSequence.clear()
+        _cpuSequence.clear()
         _userSequence.clear()
 
         _gamePhase.value = GamePhase.CPU
@@ -46,16 +47,18 @@ class GameViewModel : ViewModel(){
 
     private fun nextTurn() {
         _userSequence.clear()
-        cpuSequence.add(colors.random())
+        _cpuSequence.add(colors.random())
         _gamePhase.value = GamePhase.CPU
 
         playbackJob = viewModelScope.launch{
-            for (i in 1..cpuSequence.size) {
+            delay(1200)
+
+            for (i in 1.._cpuSequence.size) {
                 while(isPaused.value){
                     delay(paused_delay)
                 }
 
-                _activeColor.value = cpuSequence[i-1]
+                _activeColor.value = _cpuSequence[i-1]
                 delay(active_color_delay)
                 _activeColor.value = ""
                 delay(between_color_delay)
@@ -72,33 +75,34 @@ class GameViewModel : ViewModel(){
         if(checkError()) {
             _gamePhase.value = GamePhase.ERROR
             endGame()
-        }else if(_userSequence.size == cpuSequence.size){
+        }else if(_userSequence.size == _cpuSequence.size){
             nextTurn()
         }
 
     }
 
     private fun checkError() : Boolean {
-        if(cpuSequence[_userSequence.size-1] != _userSequence[_userSequence.size-1]) return true
+        if(_cpuSequence[_userSequence.size-1] != _userSequence[_userSequence.size-1]) return true
         return false
     }
 
     fun endGame(){
         var seq = ""
 
-        if (!(_gamePhase.value == GamePhase.CPU && cpuSequence.size == 1)){ //non devo salvare dati se è in riproduzione la cpu e siamo nel primo round
-            if(_gamePhase.value == GamePhase.ERROR){
-                seq = _userSequence.joinToString(" - ")
-            }else if(_userSequence.isEmpty()){
-                seq = "X"
+        if (!(_gamePhase.value == GamePhase.CPU && _cpuSequence.size == 1)){ //non devo salvare dati se è in riproduzione la cpu e siamo nel primo round
+            var currectSeq = 0
+            if(_gamePhase.value != GamePhase.ERROR){
+                if(_gamePhase.value == GamePhase.USER && userSequence.isNotEmpty()) currectSeq = userSequence.size-1
+                else if(_gamePhase.value == GamePhase.CPU) currectSeq = 0
+
                 _gamePhase.value = GamePhase.STATIC
-            }else{
-                seq = _userSequence.joinToString(" - ") + " - X"
-                _gamePhase.value = GamePhase.STATIC
-            }
+            }else currectSeq = userSequence.size-1
+
+            seq = _cpuSequence.joinToString(" - ")
 
             _gameResult.value = GameResult(
-                cpuSequence.size-1,
+                _cpuSequence.size-1,
+                currectSeq,
                 seq,
                 UUID.randomUUID().toString()
             )

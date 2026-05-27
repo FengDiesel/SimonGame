@@ -1,6 +1,7 @@
 package com.example.simongame
 
 import android.content.res.Configuration
+import android.media.SoundPool
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,11 +30,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlin.text.ifEmpty
 
 /**
@@ -48,6 +54,28 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
     val configuration = LocalConfiguration.current.orientation
     val phase by gameVM.gamePhase
     val isPaused by gameVM.isPaused
+    val activeColor by gameVM.activeColor
+
+    val sp = remember { SoundPool.Builder().setMaxStreams(1).build() }
+    val context = LocalContext.current
+    val soundMap = remember {
+        mapOf(
+            "R" to sp.load(context, R.raw.red, 1),
+            "G" to sp.load(context, R.raw.green, 1),
+            "B" to sp.load(context, R.raw.blue, 1),
+            "Y" to sp.load(context, R.raw.yellow, 1),
+            "C" to sp.load(context, R.raw.cyan, 1),
+            "M" to sp.load(context, R.raw.magenta, 1),
+        )
+    }
+
+    LaunchedEffect(activeColor) {
+        if (activeColor.isNotEmpty()) {
+            soundMap[activeColor]?.let { soundID ->
+                sp.play(soundID, 1f, 1f, 0, 0, 1f)
+            }
+        }
+    }
 
     BackHandler() {
         if(phase == GamePhase.ERROR){
@@ -80,7 +108,9 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
             ) {
                 ColorGrid(
                     modifier = Modifier.weight(1f),
-                    gameVM
+                    gameVM,
+                    sp,
+                    soundMap
                 )
 
                 Spacer(modifier = Modifier.width(10.dp))
@@ -99,7 +129,9 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
             ) {
                 ColorGrid(
                     modifier = Modifier.weight(1f),
-                    gameVM
+                    gameVM,
+                    sp,
+                    soundMap
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -123,7 +155,7 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
  * @param modifier Modificatore per gestire le dimensioni e layout.
  */
 @Composable
-fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel) {
+fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel, sp: SoundPool, soundMap: Map<String, Int>) {
     val sizeModifier =
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
             Modifier.size(130.dp)
@@ -135,30 +167,42 @@ fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
 
         Row() {
-            GameButton(Color.Red, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
+            GameButton(Color.Red, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
+                soundMap["R"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
+            })
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            GameButton(Color.Blue, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
+            GameButton(Color.Blue, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
+                soundMap["B"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
+            })
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
-            GameButton(Color.Cyan, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
+            GameButton(Color.Cyan, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
+                soundMap["C"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
+            })
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            GameButton(Color.Yellow, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
+            GameButton(Color.Yellow, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
+                soundMap["Y"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
+            })
         }
         Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
-            GameButton(Color.Magenta, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
+            GameButton(Color.Magenta, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
+                soundMap["M"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
+            })
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            GameButton(Color.Green, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)})
+            GameButton(Color.Green, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
+                soundMap["G"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
+            })
         }
     }
 }
