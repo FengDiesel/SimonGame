@@ -39,6 +39,9 @@ class GameViewModel : ViewModel(){
     fun startGame(){
         _cpuSequence.clear()
         _userSequence.clear()
+        _activeColor.value = ""
+
+        playbackJob?.cancel()
 
         _gamePhase.value = GamePhase.CPU
 
@@ -90,13 +93,12 @@ class GameViewModel : ViewModel(){
         var seq = ""
 
         if (!(_gamePhase.value == GamePhase.CPU && _cpuSequence.size == 1)){ //non devo salvare dati se è in riproduzione la cpu e siamo nel primo round
-            var currectSeq = 0
-            if(_gamePhase.value != GamePhase.ERROR){
-                if(_gamePhase.value == GamePhase.USER && userSequence.isNotEmpty()) currectSeq = userSequence.size-1
-                else if(_gamePhase.value == GamePhase.CPU) currectSeq = 0
-
-                _gamePhase.value = GamePhase.STATIC
-            }else currectSeq = userSequence.size-1
+            val currectSeq = when (_gamePhase.value) {
+                GamePhase.ERROR -> userSequence.size - 1
+                GamePhase.USER -> userSequence.size
+                GamePhase.CPU -> _cpuSequence.size - 1
+                else -> 0
+            }
 
             seq = _cpuSequence.joinToString(" - ")
 
@@ -106,8 +108,11 @@ class GameViewModel : ViewModel(){
                 seq,
                 UUID.randomUUID().toString()
             )
+
+            _gamePhase.value = GamePhase.STATIC
         } else { _gamePhase.value = GamePhase.STATIC }
 
+        _activeColor.value = ""
         playbackJob?.cancel()
     }
 }

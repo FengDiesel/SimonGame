@@ -22,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +70,12 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
         )
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            sp.release()
+        }
+    }
+
     LaunchedEffect(activeColor) {
         if (activeColor.isNotEmpty()) {
             soundMap[activeColor]?.let { soundID ->
@@ -77,13 +84,13 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
         }
     }
 
-    BackHandler() {
-        if(phase == GamePhase.ERROR){
-            onEndGame(gameVM.gameResult.value)
-        }else if(phase == GamePhase.CPU || phase == GamePhase.USER){
+    BackHandler {
+        if (phase == GamePhase.CPU || phase == GamePhase.USER) {
             gameVM.endGame()
+        }
+        if (gameVM.gameResult.value.gameID.isNotEmpty()) {
             onEndGame(gameVM.gameResult.value)
-        }else{
+        } else {
             onNullGame()
         }
     }
@@ -118,6 +125,7 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
                 GameBody(
                     if(phase == GamePhase.USER) gameVM.userSequence.joinToString(" - ") else "",
                     onEndGame = { onEndGame(gameVM.gameResult.value) },
+                    onNullGame,
                     modifier = Modifier.weight(1f),
                     gameVM
                 )
@@ -139,6 +147,7 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
                 GameBody(
                     if(phase == GamePhase.USER) gameVM.userSequence.joinToString(" - ") else "",
                     onEndGame = { onEndGame(gameVM.gameResult.value) },
+                    onNullGame,
                     modifier = Modifier.weight(1f),
                     gameVM
                 )
@@ -158,8 +167,8 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
 fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel, sp: SoundPool, soundMap: Map<String, Int>) {
     val sizeModifier =
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Modifier.size(130.dp)
-        } else Modifier.size(90.dp)
+            Modifier.width(150.dp).height(90.dp)
+        } else Modifier.width(140.dp).height(90.dp)
 
     val phase by gameVM.gamePhase
     val activeColor by gameVM.activeColor
@@ -171,27 +180,27 @@ fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel, sp: SoundPoo
                 soundMap["R"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
             })
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(6.dp))
 
             GameButton(Color.Blue, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
                 soundMap["B"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
             })
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Row() {
             GameButton(Color.Cyan, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
                 soundMap["C"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
             })
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(6.dp))
 
             GameButton(Color.Yellow, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
                 soundMap["Y"]?.let { soundID -> sp.play(soundID, 1f, 1f, 0, 0, 1f) }
             })
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Row() {
             GameButton(Color.Magenta, sizeModifier, phase, activeColor, onClickedColor = {gameVM.clickedColor(it)}, onSound = {
@@ -219,6 +228,7 @@ fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel, sp: SoundPoo
 fun GameBody(
     sequence: String,
     onEndGame: (GameResult) -> Unit,
+    onNullGame: () -> Unit,
     modifier: Modifier = Modifier,
     gameVM: GameViewModel
 ) {
@@ -245,6 +255,8 @@ fun GameBody(
         end = false
         pause = false
     }
+
+    Spacer(modifier = Modifier.height(10.dp))
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         val text = when (phase) {
@@ -281,9 +293,17 @@ fun GameBody(
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Button(onClick = { gameVM.endGame(); onEndGame(gameVM.gameResult.value)}, enabled = end) {
-                Text(text = stringResource(R.string.end_game))
-            }
+            Button(
+                onClick = {
+                    gameVM.endGame()
+                    if (gameVM.gameResult.value.gameID.isNotEmpty()) {
+                        onEndGame(gameVM.gameResult.value)
+                    } else {
+                        onNullGame()
+                    }
+                },
+                enabled = end
+            ) { Text(text = stringResource(R.string.end_game)) }
         }
     }
 }
