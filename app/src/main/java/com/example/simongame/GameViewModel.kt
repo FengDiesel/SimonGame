@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -17,7 +18,7 @@ private const val active_color_delay : Long = 1000
 private const val between_color_delay : Long = 300
 private const val paused_delay : Long = 100
 
-class GameViewModel : ViewModel(){
+class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(){
     private var _cpuSequence = mutableStateListOf<String>()
     val cpuSequence: List<String> = _cpuSequence
     private var _userSequence = mutableStateListOf<String>()
@@ -36,22 +37,47 @@ class GameViewModel : ViewModel(){
     private val _isPaused = mutableStateOf(false)
     val isPaused: State<Boolean> = _isPaused
 
+    init {
+        val savedCpu = savedStateHandle.get<ArrayList<String>>("cpu_sequence") ?: arrayListOf()
+        val savedUser = savedStateHandle.get<ArrayList<String>>("user_sequence") ?: arrayListOf()
+        val savedPhase = savedStateHandle.get<String>("game_phase") ?: GamePhase.STATIC.name
+
+        _cpuSequence.addAll(savedCpu)
+        _userSequence.addAll(savedUser)
+        _gamePhase.value = GamePhase.valueOf(savedPhase)
+        savedStateHandle["game_phase"] = _gamePhase.value.name
+
+        if (_gamePhase.value == GamePhase.CPU) {
+            nextTurn(false)
+        }
+    }
+
     fun startGame(){
         _cpuSequence.clear()
         _userSequence.clear()
+        savedStateHandle["cpu_sequence"] = ArrayList(_cpuSequence)
+        savedStateHandle["user_sequence"] = ArrayList(_userSequence)
         _activeColor.value = ""
 
         playbackJob?.cancel()
 
         _gamePhase.value = GamePhase.CPU
+        savedStateHandle["game_phase"] = _gamePhase.value.name
 
-        nextTurn()
+        nextTurn(true)
     }
 
-    private fun nextTurn() {
+    private fun nextTurn(addColor: Boolean) {
         _userSequence.clear()
-        _cpuSequence.add(colors.random())
+        savedStateHandle["user_sequence"] = ArrayList(_userSequence)
+
+        if(addColor){
+            _cpuSequence.add(colors.random())
+            savedStateHandle["cpu_sequence"] = ArrayList(_cpuSequence)
+        }
+
         _gamePhase.value = GamePhase.CPU
+        savedStateHandle["game_phase"] = _gamePhase.value.name
 
         playbackJob = viewModelScope.launch{
             delay(1200)
@@ -67,6 +93,7 @@ class GameViewModel : ViewModel(){
                 delay(between_color_delay)
             }
             _gamePhase.value = GamePhase.USER
+            savedStateHandle["game_phase"] = _gamePhase.value.name
         }
     }
 
@@ -74,12 +101,14 @@ class GameViewModel : ViewModel(){
 
     fun clickedColor(color: String){
         _userSequence.add(color)
+        savedStateHandle["user_sequence"] = ArrayList(_userSequence)
 
         if(checkError()) {
             _gamePhase.value = GamePhase.ERROR
+            savedStateHandle["game_phase"] = _gamePhase.value.name
             endGame()
         }else if(_userSequence.size == _cpuSequence.size){
-            nextTurn()
+            nextTurn(true)
         }
 
     }
@@ -109,8 +138,11 @@ class GameViewModel : ViewModel(){
                 UUID.randomUUID().toString()
             )
 
-            _gamePhase.value = GamePhase.STATIC
-        } else { _gamePhase.value = GamePhase.STATIC }
+            if (_gamePhase.value != GamePhase.ERROR) {
+                _gamePhase.value = GamePhase.STATIC
+                savedStateHandle["game_phase"] = _gamePhase.value.name
+            }
+        } else { _gamePhase.value = GamePhase.STATIC; savedStateHandle["game_phase"] = _gamePhase.value.name}
 
         _activeColor.value = ""
         playbackJob?.cancel()
