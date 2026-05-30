@@ -86,13 +86,13 @@ fun StatsScreen(history: List<GameResult>, onGameScreen: () -> Unit, onGameDetai
                             modifier = Modifier
                                 .padding(start = 8.dp)
                                 .size(45.dp)
-                                .background(color = Color.Black)
+                                .background(color = Color.LightGray)
                         ) {
                             Text(
                                 text = if (sequence.isEmpty()) "0" else game.maxCorrectLength.toString(),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = Color.Black
                             )
                         }
 
@@ -109,7 +109,8 @@ fun StatsScreen(history: List<GameResult>, onGameScreen: () -> Unit, onGameDetai
                                     Text(
                                         text = element,
                                         fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Black
                                     )
                                 }
                             }

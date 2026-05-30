@@ -39,13 +39,14 @@ class MainActivity : ComponentActivity() {
 
 /**
  * Componente principale di SimonGame.
- * Contiene NavHost per la navigazione tra le schermate e memorizza lo storico delle partite garantendo
- * la sopravvivenza durante i cambi di rotazione.
+ * Contiene NavHost per la navigazione tra le schermate e inizializza i ViewModel per la gestione dei dati.
  */
 @Composable
 fun SimonGame() {
     val navController = rememberNavController()
     val context = LocalContext.current
+
+    // Factory personalizzata per aggiungere il DAO nel GameListViewModel
     val gameListVM: GameListViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -74,7 +75,9 @@ fun SimonGame() {
             }
 
             composable("gamescreen") {
+                // GameViewModel istanziato dentro gamescreen per limitare il ciclo di vita alla sola schermata di gioco
                 val gameVM: GameViewModel = viewModel()
+
                 GameScreen(
                     gameVM,
                     onEndGame = {

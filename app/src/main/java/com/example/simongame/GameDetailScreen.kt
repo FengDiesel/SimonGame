@@ -69,7 +69,7 @@ fun GameDetailScreen(gameID: String, history: List<GameResult>, onExit: () -> Un
                         text = game.maxCorrectLength.toString(),
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Black,
-                        color = Color.Black
+                        color = Color.White
                     )
                 }
 

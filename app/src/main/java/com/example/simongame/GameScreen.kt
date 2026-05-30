@@ -44,8 +44,7 @@ import kotlin.text.ifEmpty
 
 /**
  * Schermata di avvio dove l'utente puo' comporre una sequenza di colori.
- * Gestisce il layout portrait/landscape e
- * mantiene lo stato della giocata in corso.
+ * Gestisce il layout portrait/landscape e mantiene lo stato della giocata in corso.
  *
  * @param onEndGame Funzione invocata alla pressione del tasto "Fine Partita".
  * Fornisce in output la sequenza finale sotto forma di stringa.
