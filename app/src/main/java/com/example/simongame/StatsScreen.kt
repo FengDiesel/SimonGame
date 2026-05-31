@@ -38,16 +38,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Schermata finale che mostra la lista delle partite concluse.
+ * Schermata principale che mostra la lista delle partite concluse.
+ * Ogni elemento mostra il punteggio massimo e la sequenza, evidenziando il punto di errore.
+ * con la parte errata evidenziata in rosso.
  *
- * @param history Lista di stringhe che contenente lo storico di tutte le giocate.
- * @param onBackPress Funzione invocata per intercettare il tasto "back" di sistema
- * e tornare alla schermata principale.
+ * @param history Lista delle partite concluse
+ * @param onGameScreen Callback per navigare alla schermata di gioco
+ * @param onGameDetail Callback per navigare al dettaglio di una partita, fornisce il gameID
+ */
+
+/**
+ * Schermata principale che mostra la lista delle partite concluse.
+ * Ogni elemento mostra il punteggio massimo e la sequenza, evidenziando il punto di errore.
+ *
+ * @param history Lista di [GameResult] contenente le partite concluse.
+ * @param onGameScreen Funzione per navigare alla schermata di gioco
+ * @param onGameDetail Funzione per navigare alla schermata di dettaglio di una partita
  */
 @Composable
 fun StatsScreen(history: List<GameResult>, onGameScreen: () -> Unit, onGameDetail: (String) -> Unit) {
 
     Scaffold(
+        // Floating Action Button per navigare alla schermata di gioco e iniziare una nuova partita
         floatingActionButton = {
             FloatingActionButton(onClick = { onGameScreen() }) {
                 Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.start_game))
@@ -69,9 +81,9 @@ fun StatsScreen(history: List<GameResult>, onGameScreen: () -> Unit, onGameDetai
                 )
             }
 
+            // Genera un elemento della lista per ogni partita conclusa contenuta in history
             items(history) { game ->
                 val sequence = game.sequence;
-                val letters = sequence.split(" - ")
 
                 Row(
                     modifier = Modifier.padding(vertical = 10.dp),
@@ -96,6 +108,7 @@ fun StatsScreen(history: List<GameResult>, onGameScreen: () -> Unit, onGameDetai
                             )
                         }
 
+                        // Mostra la sequenza se presente, altrimenti un testo placeholder, con relativa logica dello sfondo per visualizzare il punto di errore
                         if(!sequence.isEmpty()){
                             sequence.split(" - ").forEachIndexed { index, element ->
                                 val background = if(index <= game.currentCorrectLength-1) Color.Green else Color.Red
@@ -130,6 +143,4 @@ fun StatsScreen(history: List<GameResult>, onGameScreen: () -> Unit, onGameDetai
 
 @Preview
 @Composable
-fun StatsScreenPreview() {
-    //StatsScreen()
-}
+fun StatsScreenPreview() { }

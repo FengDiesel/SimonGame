@@ -15,8 +15,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Schermata di dettaglio di una singola partita conclusa.
+ * Mostra il punteggio massimo e la sequenza completa con la parte errata evidenziata in rosso.
+ *
+ * Si esce con il tasto Back di sistema.
+ *
+ * @param gameID Identificatore della partita
+ * @param history Lista delle partite per recuperare quella scelta
+ * @param onExit Funzione invocata all'uscita dalla schermata
+ */
 @Composable
 fun GameDetailScreen(gameID: String, history: List<GameResult>, onExit: () -> Unit) {
+    // Cerca la partita corrispondente al gameID, null se non trovata
     val game = history.find { it.gameID == gameID }
 
     Column(
@@ -33,6 +44,7 @@ fun GameDetailScreen(gameID: String, history: List<GameResult>, onExit: () -> Un
             textAlign = TextAlign.Center
         )
 
+        // Mostra un messaggio di errore se la partita non è stata trovata
         if (game == null) {
             Text(
                 text = stringResource(R.string.game_not_found),
@@ -87,6 +99,7 @@ fun GameDetailScreen(gameID: String, history: List<GameResult>, onExit: () -> Un
                     val seq = game.sequence.split(" - ")
 
                     if (seq.isNotEmpty()) {
+                        // LazyRow per supportare sequenze lunghe con scorrimento orizzontale
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth(),

@@ -41,13 +41,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlin.text.ifEmpty
-
 /**
- * Schermata di avvio dove l'utente puo' comporre una sequenza di colori.
- * Gestisce il layout portrait/landscape e mantiene lo stato della giocata in corso.
+ * Schermata principale di gioco.
+ * Gestisce il layout, il feedback tramite SoundPool e la navigazione al termine della partita.
  *
- * @param onEndGame Funzione invocata alla pressione del tasto "Fine Partita".
- * Fornisce in output la sequenza finale sotto forma di stringa.
+ * @param gameVM ViewModel della partita in corso
+ * @param onEndGame Funzione invocata con il [GameResult] al termine della partita
+ * @param onNullGame Funzione invocata quando si esce senza salvare
  */
 @Composable
 fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGame: () -> Unit) {
@@ -58,6 +58,8 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
 
     val sp = remember { SoundPool.Builder().setMaxStreams(1).build() }
     val context = LocalContext.current
+
+    // Carica i file audio e li associa con una mappa alle iniziali
     val soundMap = remember {
         mapOf(
             "R" to sp.load(context, R.raw.red, 1),
@@ -69,12 +71,14 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
         )
     }
 
+    // Rilascia le risorse audio quando GameScreen muore
     DisposableEffect(Unit) {
         onDispose {
             sp.release()
         }
     }
 
+    // Riproduce il suono corrispondente al colore attivo durante la ripoduzione CPU
     LaunchedEffect(activeColor) {
         if (activeColor.isNotEmpty()) {
             soundMap[activeColor]?.let { soundID ->
@@ -83,6 +87,7 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
         }
     }
 
+    // Handler per la gestione della fine della partita e il ritorno alla schermata inziale
     BackHandler {
         if (phase == GamePhase.CPU || phase == GamePhase.USER) {
             gameVM.endGame()
@@ -158,9 +163,10 @@ fun GameScreen(gameVM: GameViewModel, onEndGame: (GameResult) -> Unit, onNullGam
 /**
  * Composable che genera una matrice 3x2 di box colorati cliccabili.
  *
- * @param onColorClick Funzione invocata quando un colore viene premuto.
- * Ritorna la lettera iniziale del colore.
  * @param modifier Modificatore per gestire le dimensioni e layout.
+ * @param gameVM ViewModel per accedere alla fase di gioco e colore attivo.
+ * @param sp SoundPool per la riproduzione audio.
+ * @param soundMap Mappa per associare il bottone al suo suono.
  */
 @Composable
 fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel, sp: SoundPool, soundMap: Map<String, Int>) {
@@ -216,12 +222,14 @@ fun ColorGrid(modifier: Modifier = Modifier, gameVM: GameViewModel, sp: SoundPoo
 }
 
 /**
- * Composable che genera l'area di testo della sequenza e i bottoni.
+ * Composable che mostra l'area di testo della sequenza utente e i bottoni di controllo.
+ * I bottoni vengono abilitati/disabilitati in base alla fase corrente del gioco.
  *
- * @param sequence Stringa della sequenza di colori in corso.
+ * @param sequence Sequenza di colori premuti dall'utente.
  * @param onEndGame Funzione invocata per terminare la partita.
- * @param onClear Funzione invocata per svuotare la sequenza.
+ * @param onNullGame Funzione invocata quando si esce senza salvare.
  * @param modifier Modificatore per gestire le dimensioni e layout.
+ * @param gameVM ViewModel per accedere allo stato del gioco.
  */
 @Composable
 fun GameBody(
@@ -233,6 +241,8 @@ fun GameBody(
 ) {
     val phase by gameVM.gamePhase
 
+    // Abilita i bottoni in base alla fase: solo "Avvia Partita" in fase STATIC,
+    // "Pausa/Play" e "Fine Partita" in fase CPU, solo "Fine Partita" in fase USER, nessun bottone attivo in fase ERROR
     var start = false
     var end = false
     var pause = false
@@ -280,18 +290,21 @@ fun GameBody(
         Spacer(modifier = Modifier.height(10.dp))
 
         Row() {
+            // Avvia una nuova partita, attivo solo in fase STATIC
             Button(onClick = { gameVM.startGame() }, enabled = start) {
                 Text(text = stringResource(R.string.start_game))
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
+            // Alterna pausa/play durante la riproduzione CPU
             Button(onClick = { gameVM.togglePause() }, enabled = pause) {
                 Text(text = if(gameVM.isPaused.value) stringResource(R.string.play) else stringResource(R.string.pause))
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
+            // Termina la partita, se il risultato è valido lo salva, altrimenti esce senza salvare
             Button(
                 onClick = {
                     gameVM.endGame()
